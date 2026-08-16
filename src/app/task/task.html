@@ -1,0 +1,126 @@
+<div [class.dark-mode]="darkMode()" class="app-wrapper">
+  <div class="task-container">
+    
+    <!-- ===== HEADER ===== -->
+    <div class="header">
+      <h2>📋 My Task Manager</h2>
+      <button (click)="toggleDarkMode()" class="dark-toggle">
+        {{ darkMode() ? '☀️' : '🌙' }}
+      </button>
+    </div>
+
+    <!-- ===== STATS ===== -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-number">{{ totalCount }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">{{ pendingCount }}</span>
+        <span class="stat-label">Pending</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">{{ overdueTasks }}</span>
+        <span class="stat-label">Overdue</span>
+      </div>
+    </div>
+
+    <!-- ===== PROGRESS BAR ===== -->
+    <div class="progress-container">
+      <div class="progress-label">
+        <span>Progress</span>
+        <span>{{ completionPercentage }}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="completionPercentage"></div>
+      </div>
+    </div>
+
+    <!-- ===== ADD TASK FORM ===== -->
+    <div class="add-task">
+      <input 
+        type="text" 
+        [(ngModel)]="newTaskText" 
+        placeholder="Add a new task..."
+        (keyup.enter)="addTask()"
+      >
+      
+      <select [(ngModel)]="newCategory">
+        @for (cat of categories(); track cat) {
+          <option [value]="cat">{{ cat }}</option>
+        }
+      </select>
+      
+      <input 
+        type="date" 
+        [(ngModel)]="newDueDate"
+        class="date-input"
+      >
+      
+      <button (click)="addTask()">➕ Add</button>
+    </div>
+
+    <!-- ===== SEARCH & FILTER ===== -->
+    <div class="search-filter">
+      <input 
+        type="text" 
+        [(ngModel)]="searchText" 
+        placeholder="🔍 Search tasks..."
+        class="search-input"
+      >
+      
+      <select [(ngModel)]="filterCategory" class="filter-select">
+        <option value="All">All Categories</option>
+        @for (cat of categories(); track cat) {
+          <option [value]="cat">{{ cat }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- ===== TASK LIST ===== -->
+    <ul class="task-list">
+      @for (task of filteredTasks(); track task.id) {
+        <li [class.overdue]="!task.done && task.dueDate && task.dueDate < today">
+          
+          <input 
+            type="checkbox" 
+            [checked]="task.done"
+            (change)="toggleTask(task.id)"
+          >
+          
+          <div class="task-content">
+            @if (editingTaskId() === task.id) {
+              <input 
+                type="text" 
+                [value]="task.text"
+                (keyup.enter)="updateTask(task.id, $event.target.value)"
+                (blur)="updateTask(task.id, $event.target.value)"
+                #editInput
+                class="edit-input"
+              >
+            } @else {
+              <span (dblclick)="startEditing(task.id)">{{ task.text }}</span>
+              <div class="task-meta">
+                <span class="category-tag">{{ task.category }}</span>
+                @if (task.dueDate) {
+                  <span class="due-date">📅 {{ task.dueDate }}</span>
+                }
+              </div>
+            }
+          </div>
+          
+          <button (click)="deleteTask(task.id)" class="delete-btn">🗑️</button>
+        </li>
+      } @empty {
+        <li class="empty">🎉 No tasks! Add one above.</li>
+      }
+    </ul>
+
+    <!-- ===== ACTION BUTTONS ===== -->
+    <div class="clear-buttons">
+      <button (click)="clearCompleted()">🧹 Clear Completed</button>
+      <button (click)="clearAll()">🗑️ Clear All</button>
+    </div>
+
+  </div>
+</div>
